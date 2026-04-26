@@ -1,0 +1,2 @@
+portfolio;nb_positions;nb_ok;nb_errors;nb_warnings;market_value;delta;gamma;vega;theta;rho;dv01
+Options;6;6;0;6;7376745.316495568;45298.935850071444;-1750.8059472123305;-5278815.969161524;1455017.6193215442;1543849.5239161272;

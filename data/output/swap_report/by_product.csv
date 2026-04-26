@@ -1,0 +1,3 @@
+portfolio;product;market_value;delta;gamma;vega;theta;rho;dv01;nb_positions;nb_errors
+Swap;Fixed-Float Swap;1437896.4648789647;;;;;;-10052.60760570364;4;0
+Swap;Float-Float Swap;-42361.527585727395;;;;;;-72.2002193647204;1;0

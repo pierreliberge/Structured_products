@@ -1,6 +1,0 @@
-portfolio;line;product;underlying;valuation_date;maturity_date;quantity;unit_price;market_value;status;warning
-Swap;2;Fixed-Float Swap;;2026-02-27;2026-12-31;1.0;10204.081069308711;10204.081069308711;OK;swap price comme PV(receive leg) - PV(pay leg)
-Swap;3;Fixed-Float Swap;;2026-02-27;2027-12-31;1.0;126368.59015168087;126368.59015168087;OK;swap price comme PV(receive leg) - PV(pay leg)
-Swap;4;Fixed-Float Swap;;2026-02-27;2027-12-31;1.0;32294.066715648707;32294.066715648707;OK;swap price comme PV(receive leg) - PV(pay leg)
-Swap;5;Float-Float Swap;;2026-02-27;2032-07-31;1.0;-42361.527585727395;-42361.527585727395;OK;"swap price comme PV(receive leg) - PV(pay leg); support float-float via deux BondFloat"
-Swap;6;Fixed-Float Swap;;2026-02-27;2050-12-31;1.0;1269029.7269423264;1269029.7269423264;OK;swap price comme PV(receive leg) - PV(pay leg)
