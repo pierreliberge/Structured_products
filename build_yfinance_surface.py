@@ -19,7 +19,7 @@ def main() -> None:
     parser.add_argument("--min-price", type=float, default=0.01)
     parser.add_argument("--output-options", default="data/msft_options_yfinance.csv")
     parser.add_argument("--output-surface", default="data/implied_vol_surface.csv")
-    parser.add_argument("--output-plot", default="data/implied_vol_surface.png")
+    parser.add_argument("--output-plot", default=None)
     parser.add_argument("--max-plot-maturities", type=int, default=8)
     args = parser.parse_args()
 
@@ -49,13 +49,15 @@ def main() -> None:
     )
 
     save_implied_vols(surface_points, args.output_surface)
-    plot_surface_skews(surface_points, args.output_plot, args.max_plot_maturities)
+    if args.output_plot is not None:
+        plot_surface_skews(surface_points, args.output_plot, args.max_plot_maturities)
 
     maturities_count = len(group_by_maturity(surface_points))
     print(f"{len(points)} yfinance option points saved: {args.output_options}")
     print(f"{len(surface_points)} implied volatility surface points saved: {args.output_surface}")
     print(f"{maturities_count} maturities in surface.")
-    print(f"Plot: {args.output_plot}")
+    if args.output_plot is not None:
+        print(f"Plot: {args.output_plot}")
 
 
 if __name__ == "__main__":

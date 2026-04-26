@@ -96,6 +96,68 @@ class GBMModel:
             return price_matrix
 
 
+class LocalVolModel:
+    def __init__(self, local_vol_surface, grid_size=80, min_vol=1e-4, max_vol=5.0):
+        self.local_vol_surface = local_vol_surface
+        self.grid_size = grid_size
+        self.min_vol = min_vol
+        self.max_vol = max_vol
+
+    def simulate_paths(self, S0, r, T, q, n_paths, n_steps):
+        if S0 <= 0:
+            raise ValueError("Spot doit etre strictement positif")
+        if n_paths <= 0:
+            raise ValueError("Nombre de paths doit etre positif")
+        if n_steps <= 0:
+            raise ValueError("Nombre de steps doit etre positif")
+        if T < 0:
+            raise ValueError("Temps a maturite doit etre positif")
+        if T == 0:
+            return np.ones((n_paths, n_steps + 1)) * S0
+
+        dt = T / n_steps
+        price_matrix = np.ones((n_paths, n_steps + 1)) * S0
+
+        for step in range(n_steps):
+            t = step * dt
+            current_prices = price_matrix[:, step]
+            z = np.random.normal(0, 1, size=n_paths)
+            sigmas = self._local_vols_for_prices(max(t, 1e-6), current_prices)
+            drift = (r - q - 0.5 * sigmas**2) * dt
+            diffusion = sigmas * np.sqrt(dt) * z
+            price_matrix[:, step + 1] = current_prices * np.exp(drift + diffusion)
+
+        return price_matrix
+
+    def _local_vols_for_prices(self, t, prices):
+        min_price = max(float(np.min(prices)) * 0.95, 1e-4)
+        max_price = float(np.max(prices)) * 1.05
+        if max_price <= min_price:
+            return np.ones_like(prices) * self.local_vol_surface.get_local_vol(t, min_price)
+
+        strike_grid = np.linspace(min_price, max_price, self.grid_size)
+        vol_grid = []
+        for strike in strike_grid:
+            try:
+                vol = self.local_vol_surface.get_local_vol(t, strike)
+            except ValueError:
+                vol = np.nan
+            vol_grid.append(vol)
+
+        vol_grid = np.array(vol_grid, dtype=float)
+        valid_mask = np.isfinite(vol_grid)
+        if valid_mask.sum() == 0:
+            raise ValueError("Impossible de calculer la grille de volatilite locale")
+
+        vol_grid = np.interp(
+            strike_grid,
+            strike_grid[valid_mask],
+            vol_grid[valid_mask],
+        )
+        vol_grid = np.clip(vol_grid, self.min_vol, self.max_vol)
+        return np.interp(prices, strike_grid, vol_grid)
+
+
 
 
 

@@ -24,7 +24,7 @@ def main() -> None:
     parser.add_argument("--min-price", type=float, default=0.01)
     parser.add_argument("--output-options", default="data/msft_options_yfinance.csv")
     parser.add_argument("--output-iv", default="data/implied_vol_skew_2.csv")
-    parser.add_argument("--output-plot", default="data/implied_vol_skew_2.png")
+    parser.add_argument("--output-plot", default=None)
     args = parser.parse_args()
 
     dividend_yield = args.dividend_yield
@@ -60,11 +60,13 @@ def main() -> None:
     implied_vol_points = sorted(implied_vol_points, key=lambda point: point.strike)
 
     save_implied_vols(implied_vol_points, args.output_iv)
-    plot_skew(implied_vol_points, args.output_plot, rate, dividend_yield)
+    if args.output_plot is not None:
+        plot_skew(implied_vol_points, args.output_plot, rate, dividend_yield)
 
     print(f"{len(points)} yfinance option points saved: {args.output_options}")
     print(f"{len(implied_vol_points)} implied volatility points saved: {args.output_iv}")
-    print(f"Plot: {args.output_plot}")
+    if args.output_plot is not None:
+        print(f"Plot: {args.output_plot}")
 
 
 if __name__ == "__main__":

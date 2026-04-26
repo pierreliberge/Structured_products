@@ -191,7 +191,7 @@ def main() -> None:
     parser.add_argument("--max-maturity-days", type=int, default=None)
     parser.add_argument("--max-expirations", type=int, default=None)
     parser.add_argument("--output-csv", default="data/implied_vol_skew.csv")
-    parser.add_argument("--output-plot", default="data/implied_vol_skew.png")
+    parser.add_argument("--output-plot", default=None)
     args = parser.parse_args()
 
     if args.source == "yfinance":
@@ -221,11 +221,13 @@ def main() -> None:
     implied_vol_points = sorted(implied_vol_points, key=lambda point: point.strike)
 
     save_implied_vols(implied_vol_points, args.output_csv)
-    plot_skew(implied_vol_points, args.output_plot, args.rate, args.dividend_yield)
+    if args.output_plot is not None:
+        plot_skew(implied_vol_points, args.output_plot, args.rate, args.dividend_yield)
 
     print(f"{len(implied_vol_points)} implied volatility points saved.")
     print(f"CSV: {args.output_csv}")
-    print(f"Plot: {args.output_plot}")
+    if args.output_plot is not None:
+        print(f"Plot: {args.output_plot}")
 
 
 if __name__ == "__main__":
