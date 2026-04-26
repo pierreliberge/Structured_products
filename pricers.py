@@ -1,7 +1,7 @@
 import numpy as np
 from datetime import date, timedelta
 from date_utils import DayCount, ScheduleGenerator
-from products import Bond, Option, ZC, BondFixe, BondFloat, SwapIRS, OptionType, ExerciseType
+from products import Bond, Option, OptionStrategy, ZC, BondFixe, BondFloat, SwapIRS, OptionType, ExerciseType
 from scipy.stats import norm
 from models import BlackScholesModel
 from markets import Market
@@ -301,6 +301,20 @@ class BlackScholesPricer(Pricer):
             return -k * t * df_r * (1 - nd2)
         else:
             raise ValueError("Option type incorrect")
+
+
+
+
+class OptionStrategyPricer(Pricer):
+    def __init__(self, strategy: OptionStrategy, leg_pricer_factory):
+        self.strategy = strategy
+        self.leg_pricer_factory = leg_pricer_factory
+
+    def price(self):
+        price = 0.0
+        for weight, option in self.strategy.legs:
+            price += weight * self.leg_pricer_factory(option).price()
+        return price
 
 
 

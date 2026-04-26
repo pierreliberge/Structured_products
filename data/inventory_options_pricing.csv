@@ -1,0 +1,7 @@
+portfolio;line;product;underlying;valuation_date;maturity_date;quantity;unit_price;market_value;status;warning
+Options;2;Call Spread;AAPL;2026-02-27;2026-06-30;100000.0;11.77560575911427;1177560.5759114271;OK;"pas de donnees options <= 2026-02-27; utilisation de 2026-03-02; vol extrapolee depuis maturite marche 0.0493 an"
+Options;3;Call Spread;AAPL;2026-02-27;2026-03-30;100000.0;25.450303986689534;2545030.398668953;OK;"pas de donnees options <= 2026-02-27; utilisation de 2026-03-02; vol extrapolee depuis maturite marche 0.0493 an"
+Options;4;Put Spread;AAPL;2026-02-27;2026-09-30;-100000.0;1.1871769683264688;-118717.69683264688;OK;"pas de donnees options <= 2026-02-27; utilisation de 2026-03-02; vol extrapolee depuis maturite marche 0.0493 an"
+Options;5;Butterfly;AAPL;2026-02-27;2026-06-30;250000.0;10.30254881875365;2575637.2046884126;OK;"pas de donnees options <= 2026-02-27; utilisation de 2026-03-02; vol extrapolee depuis maturite marche 0.0493 an"
+Options;6;Call;AAPL;2026-02-27;2026-06-30;100000.0;0.9447911220654033;94479.11220654033;OK;"pas de donnees options <= 2026-02-27; utilisation de 2026-03-02; vol extrapolee depuis maturite marche 0.0493 an; barriere pricee par Monte Carlo GBM"
+Options;7;Put;AAPL;2026-02-27;2026-06-30;100000.0;13.86673300279972;1386673.300279972;OK;"pas de donnees options <= 2026-02-27; utilisation de 2026-03-02; vol extrapolee depuis maturite marche 0.0493 an; barriere pricee par Monte Carlo GBM"

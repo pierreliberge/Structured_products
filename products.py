@@ -57,6 +57,61 @@ class BarrierOption(Option):
             raise ValueError("Barrier must be positive")
 
 
+class OptionStrategy(Produit):
+    def __init__(self, maturity_date, legs: list[tuple[float, Option]], name: str):
+        super().__init__(maturity_date)
+        self.legs = legs
+        self.name = name
+        if len(self.legs) == 0:
+            raise ValueError("Une strategie optionnelle doit avoir au moins une jambe")
+
+
+class CallSpread(OptionStrategy):
+    def __init__(self, maturity_date, strike_1: float, strike_2: float, exercise: ExerciseType, day_count):
+        legs = [
+            (1.0, Option(maturity_date, strike_1, OptionType.CALL, exercise, day_count)),
+            (-1.0, Option(maturity_date, strike_2, OptionType.CALL, exercise, day_count)),
+        ]
+        super().__init__(maturity_date, legs, "Call Spread")
+
+
+class PutSpread(OptionStrategy):
+    def __init__(self, maturity_date, strike_1: float, strike_2: float, exercise: ExerciseType, day_count):
+        legs = [
+            (-1.0, Option(maturity_date, strike_1, OptionType.PUT, exercise, day_count)),
+            (1.0, Option(maturity_date, strike_2, OptionType.PUT, exercise, day_count)),
+        ]
+        super().__init__(maturity_date, legs, "Put Spread")
+
+
+class Butterfly(OptionStrategy):
+    def __init__(self, maturity_date, strike_1: float, strike_2: float, strike_3: float, exercise: ExerciseType, day_count):
+        legs = [
+            (1.0, Option(maturity_date, strike_1, OptionType.CALL, exercise, day_count)),
+            (-2.0, Option(maturity_date, strike_2, OptionType.CALL, exercise, day_count)),
+            (1.0, Option(maturity_date, strike_3, OptionType.CALL, exercise, day_count)),
+        ]
+        super().__init__(maturity_date, legs, "Butterfly")
+
+
+class Autocallable(Produit):
+    def __init__(self, maturity_date, observations: list[dict], underlying: str, reference_date):
+        super().__init__(maturity_date)
+        self.observations = observations
+        self.underlying = underlying
+        self.reference_date = reference_date
+
+
+class StructuredNote(Produit):
+    def __init__(self, maturity_date, code_product, participation=None, barrier_1=None, cap=None, barrier_2=None):
+        super().__init__(maturity_date)
+        self.code_product = code_product
+        self.participation = participation
+        self.barrier_1 = barrier_1
+        self.cap = cap
+        self.barrier_2 = barrier_2
+
+
 
 
 class Bond(Produit):
