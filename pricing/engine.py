@@ -538,12 +538,7 @@ class PricingEngine:
         for step in range(n_steps):
             t = max(step * dt, 1e-6)
             current = paths[:, step]
-            sigmas = np.array(
-                [
-                    local_vol_surface.get_local_vol(t, max(float(price), 1e-8))
-                    for price in current
-                ]
-            )
+            sigmas = local_vol_surface.get_local_vol(t, np.maximum(current, 1e-8))
             drift = (rate - self.dividend_yield - 0.5 * sigmas**2) * dt
             diffusion = sigmas * np.sqrt(dt) * shocks[:, step]
             paths[:, step + 1] = current * np.exp(drift + diffusion)

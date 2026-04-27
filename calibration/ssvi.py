@@ -9,6 +9,7 @@ from scipy.optimize import minimize
 class SSVIParameters:
     maturity_date: str
     maturity: float
+    forward: float | None
     theta: float
     rho: float
     phi: float
@@ -36,6 +37,13 @@ class SSVIVolSurface:
 
         self.parameters = sorted(parameters, key=lambda param: param.maturity)
         self.maturities = np.array([param.maturity for param in self.parameters])
+        self.forwards = np.array(
+            [
+                np.nan if param.forward is None else param.forward
+                for param in self.parameters
+            ],
+            dtype=float,
+        )
 
     @classmethod
     def from_csv(cls, file_path: str = "data/ssvi_surface_params.csv"):
@@ -44,6 +52,7 @@ class SSVIVolSurface:
             SSVIParameters(
                 maturity_date=str(row["maturity_date"]),
                 maturity=float(row["maturity"]),
+                forward=_optional_float(row.get("forward")),
                 theta=float(row["theta"]),
                 rho=float(row["rho"]),
                 phi=float(row["phi"]),
@@ -53,17 +62,22 @@ class SSVIVolSurface:
         ]
         return cls(parameters)
 
-    def get_total_variance(self, maturity: float, strike: float, forward: float) -> float:
+    def get_total_variance(self, maturity: float, strike, forward):
         if maturity <= 0:
             return 0.0
-        if strike <= 0 or forward <= 0:
+        strike_array = np.asarray(strike, dtype=float)
+        forward_array = np.asarray(forward, dtype=float)
+        if np.any(strike_array <= 0) or np.any(forward_array <= 0):
             raise ValueError("strike et forward doivent etre strictement positifs")
 
-        k = np.log(strike / forward)
+        scalar_input = strike_array.ndim == 0 and forward_array.ndim == 0
+        k = np.log(strike_array / forward_array)
         if maturity <= self.maturities[0]:
-            return self._total_variance_for_params(self.parameters[0], k)
+            variance = self._total_variance_for_params(self.parameters[0], k)
+            return float(variance) if scalar_input else variance
         if maturity >= self.maturities[-1]:
-            return self._total_variance_for_params(self.parameters[-1], k)
+            variance = self._total_variance_for_params(self.parameters[-1], k)
+            return float(variance) if scalar_input else variance
 
         right_index = int(np.searchsorted(self.maturities, maturity))
         left_params = self.parameters[right_index - 1]
@@ -74,15 +88,25 @@ class SSVIVolSurface:
         weight = (maturity - left_params.maturity) / (
             right_params.maturity - left_params.maturity
         )
-        return float(left_w + weight * (right_w - left_w))
+        variance = left_w + weight * (right_w - left_w)
+        return float(variance) if scalar_input else variance
 
-    def get_vol(self, maturity: float, strike: float, forward: float) -> float:
+    def get_vol(self, maturity: float, strike, forward):
         total_variance = self.get_total_variance(maturity, strike, forward)
-        return float(np.sqrt(max(total_variance, 0.0) / maturity))
+        vol = np.sqrt(np.maximum(total_variance, 0.0) / maturity)
+        return float(vol) if np.asarray(vol).ndim == 0 else vol
+
+    def get_forward(self, maturity: float, fallback_forward: float | None = None) -> float:
+        valid = ~np.isnan(self.forwards)
+        if np.any(valid):
+            return float(np.interp(maturity, self.maturities[valid], self.forwards[valid]))
+        if fallback_forward is None:
+            raise ValueError("Aucun forward disponible pour la surface SSVI")
+        return float(fallback_forward)
 
     @staticmethod
-    def _total_variance_for_params(params: SSVIParameters, k: float) -> float:
-        return float(SSVIModel.total_variance(k, params.theta, params.rho, params.phi))
+    def _total_variance_for_params(params: SSVIParameters, k):
+        return SSVIModel.total_variance(k, params.theta, params.rho, params.phi)
 
 
 class SSVICalibrator:
@@ -122,11 +146,18 @@ class SSVICalibrator:
         return SSVIParameters(
             maturity_date=str(df["maturity_date"].iloc[0]),
             maturity=float(df["maturity"].iloc[0]),
+            forward=float(df["forward"].median()) if "forward" in df.columns else None,
             theta=theta,
             rho=float(rho),
             phi=float(phi),
             rmse_total_variance=rmse,
         )
+
+
+def _optional_float(value) -> float | None:
+    if value is None or pd.isna(value):
+        return None
+    return float(value)
 
 
 

@@ -39,12 +39,23 @@ def save_parameters(params_by_maturity, output_path: str | Path) -> None:
 
     with output_path.open(mode="w", encoding="utf-8", newline="") as csv_file:
         writer = csv.writer(csv_file, delimiter=";")
-        writer.writerow(["maturity_date", "maturity", "theta", "rho", "phi", "rmse_total_variance"])
+        writer.writerow(
+            [
+                "maturity_date",
+                "maturity",
+                "forward",
+                "theta",
+                "rho",
+                "phi",
+                "rmse_total_variance",
+            ]
+        )
         for params in params_by_maturity:
             writer.writerow(
                 [
                     params.maturity_date,
                     params.maturity,
+                    params.forward,
                     params.theta,
                     params.rho,
                     params.phi,
@@ -109,10 +120,10 @@ def plot_surface_fit(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input", default="data/implied_vol_surface.csv")
-    parser.add_argument("--output-params", default="data/ssvi_surface_params.csv")
-    parser.add_argument("--output-surface", default="data/ssvi_fitted_surface.csv")
-    parser.add_argument("--output-plot", default=None)
+    parser.add_argument("--input", default="data/total_iv_surface_bloomberg.csv")
+    parser.add_argument("--output-params", default="data/output/total_ssvi_params.csv")
+    parser.add_argument("--output-surface", default="data/output/total_ssvi_fitted_surface.csv")
+    parser.add_argument("--output-plot", default="data/output/total_ssvi_fit.png")
     parser.add_argument("--max-plot-maturities", type=int, default=8)
     args = parser.parse_args()
 

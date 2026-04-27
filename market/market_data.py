@@ -16,6 +16,7 @@ class OptionCalibrationPoint:
     ticker: str
     intrinsic_value: float | None = None
     extrinsic_value: float | None = None
+    forward: float | None = None
 
 
 @dataclass

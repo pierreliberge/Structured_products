@@ -41,12 +41,12 @@ def save_report_tables(report: PortfolioReport, report_dir: str | Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--inventory", default="data/Inventaire.xlsx")
-    parser.add_argument("--options-csv", default="data/aapl_options_yfinance.csv")
+    parser.add_argument("--options-csv", default="data/total_iv_surface_bloomberg.csv")
     parser.add_argument("--rate-curve", default="data/1.rate_curves.parquet")
-    parser.add_argument("--rate-country", default="United States")
+    parser.add_argument("--rate-country", default="France")
     parser.add_argument("--dividend-yield", type=float, default=0.0)
     parser.add_argument("--portfolio", default="Options")
-    parser.add_argument("--output", default="data/inventory_pricing.csv")
+    parser.add_argument("--output", default="data/output/inventory_pricing.csv")
     parser.add_argument("--report-dir", default=None)
     parser.add_argument("--vanilla-model", choices=["bs"], default="bs")
     parser.add_argument(
@@ -64,8 +64,8 @@ def main() -> None:
     parser.add_argument("--rate-bump-absolute", type=float, default=0.0001)
     parser.add_argument("--theta-bump-days", type=int, default=1)
     parser.add_argument("--finite-difference-seed", type=int, default=12345)
-    parser.add_argument("--ssvi-params", default=None)
-    parser.add_argument("--heston-params", default=None)
+    parser.add_argument("--ssvi-params", default="data/output/total_ssvi_params.csv")
+    parser.add_argument("--heston-params", default="data/output/total_heston_params.csv")
     args = parser.parse_args()
 
     portfolios = InventoryExcelLoader(args.inventory).load()

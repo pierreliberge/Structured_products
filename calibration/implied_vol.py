@@ -4,10 +4,9 @@ import argparse
 import csv
 
 from market.market_data import ImpliedVolPoint, OptionCalibrationPoint
-from market.options_loader import OptionsCSVLoader
+from market.options_loader import BloombergOptionsLoader
 from visualization.plot_utils import plot_skew
-from market.vol_surface import keep_latest_trade_date, keep_maturity, keep_otm_options
-from market.yfinance_options_loader import YFinanceOptionsLoader
+from market.vol_surface import keep_maturity
 
 
 class ImpliedVolCalculator:
@@ -129,7 +128,9 @@ class ImpliedVolCalculator:
                     ticker=point.ticker,
                     rate=rate,
                     dividend_yield=dividend_yield,
-                    forward=point.spot * exp((rate - dividend_yield) * point.maturity),
+                    forward=point.forward
+                    if point.forward is not None
+                    else point.spot * exp((rate - dividend_yield) * point.maturity),
                 )
             )
         return implied_vol_points
@@ -181,42 +182,29 @@ def save_implied_vols(points: list[ImpliedVolPoint], output_path: str | Path) ->
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ticker", default="MSFT")
-    parser.add_argument("--rate", type=float, default=0.04)
+    parser.add_argument("--ticker", default="TTE")
+    parser.add_argument("--rate", type=float, default=0.0244)
     parser.add_argument("--dividend-yield", type=float, default=0.0)
     parser.add_argument("--maturity-date", default=None)
-    parser.add_argument("--input", default="data/options.csv")
-    parser.add_argument("--source", choices=["csv", "yfinance"], default="csv")
+    parser.add_argument("--input", default="data/Total_vol_final.xlsx")
+    parser.add_argument("--source", choices=["bloomberg"], default="bloomberg")
     parser.add_argument("--min-maturity-days", type=int, default=30)
     parser.add_argument("--max-maturity-days", type=int, default=None)
     parser.add_argument("--max-expirations", type=int, default=None)
-    parser.add_argument("--output-csv", default="data/implied_vol_skew.csv")
+    parser.add_argument("--output-csv", default="data/total_iv_surface_bloomberg.csv")
     parser.add_argument("--output-plot", default=None)
     args = parser.parse_args()
 
-    if args.source == "yfinance":
-        loader = YFinanceOptionsLoader(args.ticker)
-        points = loader.load(
-            min_maturity_days=args.min_maturity_days,
-            max_maturity_days=args.max_maturity_days,
-            max_expirations=args.max_expirations,
-        )
-    else:
-        loader = OptionsCSVLoader(args.input)
-        points = loader.load(
-            ticker=args.ticker,
-            min_price=0.0,
-            min_maturity=args.min_maturity_days / 365,
-        )
-        points = keep_latest_trade_date(points)
-
-    points = keep_otm_options(points, args.rate, args.dividend_yield)
-    points = keep_maturity(points, args.maturity_date)
-
-    implied_vol_points = ImpliedVolCalculator.compute_points(
-        points,
-        rate=args.rate,
-        dividend_yield=args.dividend_yield,
+    loader = BloombergOptionsLoader(args.input)
+    raw_points = loader.load_implied_vol_points(
+        ticker=args.ticker,
+        min_maturity=args.min_maturity_days / 365,
+        only_otm=True,
+    )
+    implied_vol_points = (
+        keep_maturity(raw_points, args.maturity_date)
+        if args.maturity_date is not None
+        else raw_points
     )
     implied_vol_points = sorted(implied_vol_points, key=lambda point: point.strike)
 

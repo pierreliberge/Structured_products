@@ -18,6 +18,8 @@ def keep_otm_options(
     dividend_yield: float = 0.0,
 ) -> list[OptionCalibrationPoint]:
     def boundary(point: OptionCalibrationPoint) -> float:
+        if point.forward is not None:
+            return point.forward
         if rate is None:
             return point.spot
         return point.spot * exp((rate - dividend_yield) * point.maturity)

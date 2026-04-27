@@ -40,7 +40,10 @@ def plot_skew(
 
     first = points[0]
     plt.axvline(first.spot, color="gray", linestyle="--", label="Spot")
-    if rate is not None:
+    if first.forward is not None:
+        forward = first.forward
+        plt.axvline(forward, color="black", linestyle=":", label="ATM forward")
+    elif rate is not None:
         forward = first.spot * exp((rate - dividend_yield) * first.maturity)
         plt.axvline(forward, color="black", linestyle=":", label="Forward")
     plt.title(
